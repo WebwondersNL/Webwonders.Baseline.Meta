@@ -1,0 +1,24 @@
+{
+  "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+  "AuthorDetails": {
+    "Name": "Webwonders",
+    "Description": "Webwonders is a digital agency and Umbraco Platinum Partner based in Eindhoven, the Netherlands.",
+    "Url": "https://www.webwonders.nl/",
+    "ImageUrl": "https://www.webwonders.nl/Images/logo/Webwonders icon.png",
+    "SyncContributorsFromRepository": true
+  },
+  "Category": "Developer Tools",
+  "Description": "",
+  "IssueTrackerUrl": "",
+  "DocumentationUrl": "",
+  "LicenseTypes": [ "Free" ],
+  "IsSubPackageOf": "",
+  "PackageType": "Package",
+  "PackagesByAuthor": [],
+  "RelatedPackages": [],
+  "Screenshots": [],
+  "Tags": [ "Umbraco Cloud", "Umbraco", "Configuration" ],
+  "Title": "Webwonders Umbraco Meta Extensions",
+  "VideoUrl": "",
+  "VersionDependencyMode": "SemVer"
+}
