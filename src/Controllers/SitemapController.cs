@@ -19,7 +19,7 @@ public class SitemapController : Controller
     private readonly IConfiguration _configuration;
     private readonly IVariationContextAccessor _variationContextAccessor;
     private readonly IUmbracoContextFactory _umbracoContextFactory;
-    private readonly ILanguageService _languageService;
+    private readonly ILocalizationService _localizationService;
     
     public SitemapController(
         ILogger<SitemapController> logger,
@@ -27,7 +27,7 @@ public class SitemapController : Controller
         IConfiguration configuration,
         IVariationContextAccessor variationContextAccessor,
         IUmbracoContextFactory umbracoContextFactory,
-        ILanguageService languageService
+        ILocalizationService localizationService
     )
     {
         _logger = logger;
@@ -35,7 +35,7 @@ public class SitemapController : Controller
         _configuration = configuration;
         _variationContextAccessor = variationContextAccessor;
         _umbracoContextFactory = umbracoContextFactory;
-        _languageService = languageService;
+        _localizationService = localizationService;
     }
     
     
@@ -86,12 +86,11 @@ public class SitemapController : Controller
         }
         
         // Get the default language from Umbraco if domain.LanguageIsoCode is empty or null
-        
-        var languageIsoCode = string.IsNullOrWhiteSpace(domain.LanguageIsoCode)
+
+        var languageIsoCode = !string.IsNullOrWhiteSpace(domain.LanguageIsoCode)
             ? domain.LanguageIsoCode
-            : _languageService.GetDefaultLanguageAsync()
-                .GetAwaiter().GetResult()
-                ?.IsoCode;
+            : _localizationService.GetDefaultLanguageIsoCode();
+                
 
         var rootContentId = domain.RootContentId;
         var root = umbracoContext.Content?.GetById(rootContentId ?? 0);
@@ -106,13 +105,31 @@ public class SitemapController : Controller
 
             if (firstDomain != null)
             {
-                root = umbracoContext?.Content?.GetById(firstDomain.RootContentId ?? 0);
+                root = umbracoContext.Content?.GetById(firstDomain.RootContentId ?? 0);
                 languageIsoCode = firstDomain.LanguageIsoCode;
             }
-
         }
         
-        return Content("Nothing to see here, move along.", "text/plain");
+        var excludedDoctypes = configSection.GetSection("ExcludedDoctypesXmlSitemap").Get<string[]>() ?? Array.Empty<string>();
+        
+        // Build the XML
+        var sb = new StringBuilder();
+        
+        if (root != null && languageIsoCode != null)
+        {
+            sb.Append(RenderSiteMapUrlEntry(root, languageIsoCode));
+            sb.Append(RenderSiteMapUrlEntriesForChildren(root, excludedDoctypes.ToList(), languageIsoCode));
+        }
+
+        if (sb.Length == 0)
+            return Content(string.Empty, "application/xml");
+
+        var xml = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                  $"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" +
+                  sb +
+                  $"</urlset>";
+
+        return Content(xml, "application/xml");
     }
 
     public string RenderSiteMapUrlEntry(IPublishedContent node, string languageIsoCode)
@@ -132,7 +149,17 @@ public class SitemapController : Controller
 
         if (node.ContentType.Alias == Constants.Sitemap.PageTypes.Redirect)
         {
-            // Gonna have to figure out how to handle this node considering we used to pass it to a "Redirect" Generated model
+            var redirectTo = node.Value<Link>("redirectTo");
+
+            if (redirectTo != null && (redirectTo.Url == null || 
+                                       (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains("webwonders.nl"))))
+            {
+                renderNode = false;
+            }
+            else
+            {
+                url = redirectTo?.Url;
+            }
         }
 
         if (renderNode)

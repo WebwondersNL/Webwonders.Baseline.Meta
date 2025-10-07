@@ -1,0 +1,17 @@
+﻿name: Publish Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    uses: WebwondersNL/Webwonders.Workflows/.github/workflows/publish-nuget.yml@main
+    with:
+      dotnet-version: '8.0.x'
+      project-glob: 'src/**/Webwonders.Baseline.*.csproj'
+      prerelease-label: 'beta'
+      require-branch-regex: '^(main|release/[0-9]+\.x)$'
+      environment-name: 'nuget-prod'
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
