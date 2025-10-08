@@ -4,6 +4,7 @@ using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
 using Webwonders.Baseline.Meta.Controllers;
+using Webwonders.Baseline.Meta.Services;
 
 namespace Webwonders.Baseline.Meta.Composers
 {
@@ -44,6 +45,8 @@ namespace Webwonders.Baseline.Meta.Composers
                     })
                 });
             });
+            
+            builder.Services.AddScoped<ILanguageService, LanguageService>();
         }
     }
 }
