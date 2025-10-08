@@ -24,8 +24,7 @@ namespace Webwonders.Baseline.Meta.Composers
                     })
                 });
             });
-
-            // Need a way to toggle this off from being initialised, perhaps some sort of Appsettings flag.
+            
             builder.Services.Configure<UmbracoPipelineOptions>(options =>
             {
                 options.AddFilter(new UmbracoPipelineFilter(nameof(SitemapController))
@@ -35,7 +34,7 @@ namespace Webwonders.Baseline.Meta.Composers
                         endpoints.MapControllerRoute(
                             "Sitemap Controller",
                             "/sitemap.xml",
-                            new { Controller = nameof(SitemapController), Action = "Sitemap" });
+                            new { Controller = "Sitemap", Action = "Sitemap" });
 
                         endpoints.MapControllerRoute(
                             "Sitemap Controller with culture",
