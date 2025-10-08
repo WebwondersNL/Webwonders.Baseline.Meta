@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
+using Umbraco.Cms.Web.Common.Routing;
 using Webwonders.Baseline.Meta.Controllers;
 using Webwonders.Baseline.Meta.Services;
 
@@ -12,6 +13,22 @@ namespace Webwonders.Baseline.Meta.Composers
     {
         public void Compose(IUmbracoBuilder builder)
         {
+            builder.Services.Configure<UmbracoRequestOptions>(options =>
+            {
+                string[] allowList = new[] {"/sitemap.xml", "/robots.txt"};
+                options.HandleAsServerSideRequest = httpRequest =>
+                {
+                    foreach (string route in allowList)
+                    {
+                        if (httpRequest.Path.Value != null && httpRequest.Path.Value.Contains(route))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+            });
+            
             builder.Services.Configure<UmbracoPipelineOptions>(options =>
             {
                 options.AddFilter(new UmbracoPipelineFilter(nameof(RobotsController))
