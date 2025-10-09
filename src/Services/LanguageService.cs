@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Extensions;
 using Webwonders.Baseline.Meta.Models;
 
@@ -11,9 +10,8 @@ public interface ILanguageService
     LanguagesModel? GetLanguages(IPublishedContent currentPage, string? culture, bool fallbackToAncestors = true);
 }
 
-public class LanguageService(IPublishedSnapshotAccessor publishedSnapshotAccessor) : ILanguageService
+public class LanguageService() : ILanguageService
 {
-    private readonly IPublishedSnapshotAccessor _publishedSnapshotAccessor = publishedSnapshotAccessor;
 
     public LanguagesModel? GetLanguages(IPublishedContent currentPage, string? culture, bool fallbackToAncestors = true)
         {

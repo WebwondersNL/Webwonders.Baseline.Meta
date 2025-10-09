@@ -20,7 +20,7 @@ public class RobotsController(
 {
     public async Task<IActionResult> Robots()
     {
-        var domainObjects = domainService.GetAll(false);
+        var domainObjects = await domainService.GetAllAsync(false);
         var domains = domainObjects.ToArray();
         
         var configSection = configuration.GetSection("Webwonders:Meta");

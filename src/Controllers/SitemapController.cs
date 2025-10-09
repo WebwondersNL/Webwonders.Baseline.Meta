@@ -19,7 +19,7 @@ public class SitemapController : Controller
     private readonly IConfiguration _configuration;
     private readonly IVariationContextAccessor _variationContextAccessor;
     private readonly IUmbracoContextFactory _umbracoContextFactory;
-    private readonly ILocalizationService _localizationService;
+    private readonly ILanguageService _languageService;
     
     public SitemapController(
         ILogger<SitemapController> logger,
@@ -27,7 +27,7 @@ public class SitemapController : Controller
         IConfiguration configuration,
         IVariationContextAccessor variationContextAccessor,
         IUmbracoContextFactory umbracoContextFactory,
-        ILocalizationService localizationService
+        ILanguageService languageService
     )
     {
         _logger = logger;
@@ -35,12 +35,12 @@ public class SitemapController : Controller
         _configuration = configuration;
         _variationContextAccessor = variationContextAccessor;
         _umbracoContextFactory = umbracoContextFactory;
-        _localizationService = localizationService;
+        _languageService = languageService;
     }
     
     
     [HttpGet]
-    public IActionResult Sitemap(string? culture)
+    public async Task<IActionResult> Sitemap(string? culture)
     {
         var configSection = _configuration.GetSection("Webwonders:Meta");
         
@@ -50,7 +50,7 @@ public class SitemapController : Controller
             return NotFound();
         }
 
-        var allDomains = _domainService.GetAll(false).ToArray();
+        var allDomains = _domainService.GetAllAsync(false).Result.ToArray();
         if (allDomains.Length <= 0)
         {
             _logger.LogError("SitemapController: No domains found for sitemap generation.");
@@ -89,7 +89,7 @@ public class SitemapController : Controller
 
         var languageIsoCode = !string.IsNullOrWhiteSpace(domain.LanguageIsoCode)
             ? domain.LanguageIsoCode
-            : _localizationService.GetDefaultLanguageIsoCode();
+            : await _languageService.GetDefaultIsoCodeAsync();
                 
 
         var rootContentId = domain.RootContentId;
@@ -98,7 +98,7 @@ public class SitemapController : Controller
         if (root == null)
         {
             _logger.LogWarning(
-                $"SitemapController: Root content not found for domain {domain.DomainName} with RootContentId {rootContentId}."
+                $"SitemapController: Root content not found for domain {domain.LanguageIsoCode} with RootContentId {rootContentId}."
             );
 
             var firstDomain = allDomains.FirstOrDefault();
