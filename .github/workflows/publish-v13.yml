@@ -1,0 +1,21 @@
+﻿name: Publish Release (v13)
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    # Call your shared workflow
+    uses: WebwondersNL/Webwonders.Workflows/.github/workflows/publish-nuget.yml@main
+    with:
+      # Umbraco 13 runs on .NET 8
+      dotnet-version: '8.0.x'
+      # Only pick your packable projects
+      project-glob: 'src/**/Webwonders.Baseline.*.csproj'
+      # Accept only tags that point to v13-line commits
+      require-branch-regex: '^v13$|^release/13\.x$'
+      # Keep your approval gate
+      environment-name: 'nuget-prod'
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
