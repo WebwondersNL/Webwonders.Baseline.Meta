@@ -63,12 +63,7 @@ public class SitemapController : Controller
         var currentUrlWithoutSitemap = currentUrl.EndsWith("/sitemap.xml")
             ? currentUrl[..^"/sitemap.xml".Length]
             : currentUrl;
-        
-        var uri = new Uri(currentUrlWithoutSitemap);
-        var normalizedUrl = $"{uri.Host}{(uri.IsDefaultPort ? "" : $"{uri.Port}")}{uri.AbsolutePath}".TrimEnd('/')
-            .ToLowerInvariant();
-
-        var domain = allDomains.FirstOrDefault(d => normalizedUrl == d.DomainName.TrimEnd("/").ToLowerInvariant());
+        var domain = allDomains.FirstOrDefault(d => currentUrlWithoutSitemap == d.DomainName.TrimEnd("/").ToLowerInvariant());
 
         if (domain == null)
         {
