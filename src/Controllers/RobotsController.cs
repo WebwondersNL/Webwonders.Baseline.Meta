@@ -82,7 +82,7 @@ public class RobotsController(
 
                     if (domainRootContent != null && domainRootContent.IsPublished(culture))
                     {
-                        bool isSitemapPublished = domainRootContent.Children().Any(x =>
+                        bool isSitemapPublished = domainRootContent.Children(culture).Any(x =>
                             x.ContentType.Alias.Equals("sitemap") &&
                             x.IsPublished(culture));
 
