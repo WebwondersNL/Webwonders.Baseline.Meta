@@ -23,23 +23,13 @@ public class RobotsController(
         var domainObjects = domainService.GetAll(false);
         var domains = domainObjects.ToArray();
         
-        var configSection = configuration.GetSection("Webwonders:Meta");
+        var configSection = configuration.GetSection("Webwonders:Meta:Robots");
 
         List<string> rules = new List<string>();
         
-        if(configSection["GenerateRobots"] != "true")
-        {
-            logger.LogInformation("RobotsController: robots.txt is disabled by configuration");
-            
-            rules.Add(Constants.RobotsTxt.UserAgents.All);
-            rules.Add(Constants.RobotsTxt.Content.Disallow + "*");
-            
-            var generatedRobots = GenerateRobots(rules);
-            
-            return Content(generatedRobots, "text/plain");
-        }
+        rules.Add(Constants.RobotsTxt.UserAgents.All);
+        rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco");
         
-
         if (configSection["CustomRobots"] != null && configSection["CustomRobots"] is { Length: > 0 })
         {
             var customRobotsValue = configSection["CustomRobots"];
@@ -92,7 +82,7 @@ public class RobotsController(
                             var fullUrl = domainString.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                                 ? domainString
                                 : $"https://{domainString}";
-                            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap");
+                            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap.xml");
                         }
                     }
                 }

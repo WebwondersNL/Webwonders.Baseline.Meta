@@ -42,14 +42,8 @@ public class SitemapController : Controller
     [HttpGet]
     public IActionResult Sitemap(string? culture)
     {
-        var configSection = _configuration.GetSection("Webwonders:Meta");
+        var configSection = _configuration.GetSection("Webwonders:Meta:Sitemap");
         
-        if(configSection["GenerateSitemap"] != "true")
-        {
-            _logger.LogInformation("SitemapController: sitemap.xml is disabled by configuration");
-            return NotFound();
-        }
-
         var allDomains = _domainService.GetAll(false).ToArray();
         if (allDomains.Length <= 0)
         {
@@ -105,7 +99,7 @@ public class SitemapController : Controller
             }
         }
         
-        var excludedDoctypes = configSection.GetSection("ExcludedDoctypesXmlSitemap").Get<string[]>() ?? Array.Empty<string>();
+        var excludedDoctypes = configSection.GetSection("ExcludedDoctypesFromSitemaps").Get<string[]>() ?? Array.Empty<string>();
         
         // Build the XML
         var sb = new StringBuilder();
@@ -144,10 +138,11 @@ public class SitemapController : Controller
 
         if (node.ContentType.Alias == Constants.Sitemap.PageTypes.Redirect)
         {
-            var redirectTo = node.Value<Link>("redirectTo");
+            var redirectTo = node.Value<Link>(Constants.Sitemap.Properties.RedirectToProperty);
 
+            // Double check if host is the correct value to compare against.
             if (redirectTo != null && (redirectTo.Url == null || 
-                                       (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains("webwonders.nl"))))
+                                       (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains(Request.Host.Host))))
             {
                 renderNode = false;
             }
