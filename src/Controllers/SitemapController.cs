@@ -42,7 +42,7 @@ public class SitemapController : Controller
     [HttpGet]
     public async Task<IActionResult> Sitemap(string? culture)
     {
-        var configSection = _configuration.GetSection("Webwonders:Meta");
+        var configSection = _configuration.GetSection("Webwonders:Meta:Sitemap");
         
         var allDomains = _domainService.GetAllAsync(false).Result.ToArray();
         if (allDomains.Length <= 0)

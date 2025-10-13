@@ -23,7 +23,7 @@ public class RobotsController(
         var domainObjects = await domainService.GetAllAsync(false);
         var domains = domainObjects.ToArray();
         
-        var configSection = configuration.GetSection("Webwonders:Meta");
+        var configSection = configuration.GetSection("Webwonders:Meta:Robots");
 
         List<string> rules = new List<string>();
         
