@@ -5,6 +5,7 @@ using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
 using Umbraco.Cms.Web.Common.Routing;
 using Webwonders.Baseline.Meta.Controllers;
+using Webwonders.Baseline.Meta.Options;
 using Webwonders.Baseline.Meta.Services;
 
 namespace Webwonders.Baseline.Meta.Composers
@@ -13,6 +14,8 @@ namespace Webwonders.Baseline.Meta.Composers
     {
         public void Compose(IUmbracoBuilder builder)
         {
+            builder.Services.AddOptions<WebwondersMetaSettings>().Bind(builder.Config.GetSection(WebwondersMetaSettings.ConfigurationName));
+            
             builder.Services.Configure<UmbracoRequestOptions>(options =>
             {
                 string[] allowList = new[] {"/sitemap.xml", "/robots.txt"};

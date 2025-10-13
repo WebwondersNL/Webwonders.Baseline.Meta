@@ -44,12 +44,6 @@ public class SitemapController : Controller
     {
         var configSection = _configuration.GetSection("Webwonders:Meta");
         
-        if(configSection["GenerateSitemap"] != "true")
-        {
-            _logger.LogInformation("SitemapController: sitemap.xml is disabled by configuration");
-            return NotFound();
-        }
-
         var allDomains = _domainService.GetAllAsync(false).Result.ToArray();
         if (allDomains.Length <= 0)
         {
@@ -64,11 +58,8 @@ public class SitemapController : Controller
             ? currentUrl[..^"/sitemap.xml".Length]
             : currentUrl;
         
-        var uri = new Uri(currentUrlWithoutSitemap);
-        var normalizedUrl = $"{uri.Host}{(uri.IsDefaultPort ? "" : $"{uri.Port}")}{uri.AbsolutePath}".TrimEnd('/')
-            .ToLowerInvariant();
 
-        var domain = allDomains.FirstOrDefault(d => normalizedUrl == d.DomainName.TrimEnd("/").ToLowerInvariant());
+        var domain = allDomains.FirstOrDefault(d => currentUrlWithoutSitemap == d.DomainName.TrimEnd("/").ToLowerInvariant());
 
         if (domain == null)
         {
@@ -110,7 +101,7 @@ public class SitemapController : Controller
             }
         }
         
-        var excludedDoctypes = configSection.GetSection("ExcludedDoctypesXmlSitemap").Get<string[]>() ?? Array.Empty<string>();
+        var excludedDoctypes = configSection.GetSection("ExcludedDoctypesFromSitemaps").Get<string[]>() ?? Array.Empty<string>();
         
         // Build the XML
         var sb = new StringBuilder();
@@ -149,10 +140,10 @@ public class SitemapController : Controller
 
         if (node.ContentType.Alias == Constants.Sitemap.PageTypes.Redirect)
         {
-            var redirectTo = node.Value<Link>("redirectTo");
+            var redirectTo = node.Value<Link>(Constants.Sitemap.Properties.RedirectToProperty);
 
             if (redirectTo != null && (redirectTo.Url == null || 
-                                       (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains("webwonders.nl"))))
+                                       (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains(Request.Host.Host))))
             {
                 renderNode = false;
             }

@@ -34,6 +34,7 @@ public static partial class Constants
             public const string SearchEngineFrequency = "searchEngineChangeFrequency";
             public const string SearchEnginePriority = "searchEngineRelativePriority";
             public const string HideFromSearchEngines = "hideFromSearchEngines";
+            public const string RedirectToProperty = "redirectTo";
         }
         
         public static class Default

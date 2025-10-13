@@ -27,19 +27,9 @@ public class RobotsController(
 
         List<string> rules = new List<string>();
         
-        if(configSection["GenerateRobots"] != "true")
-        {
-            logger.LogInformation("RobotsController: robots.txt is disabled by configuration");
-            
-            rules.Add(Constants.RobotsTxt.UserAgents.All);
-            rules.Add(Constants.RobotsTxt.Content.Disallow + "*");
-            
-            var generatedRobots = GenerateRobots(rules);
-            
-            return Content(generatedRobots, "text/plain");
-        }
+        rules.Add(Constants.RobotsTxt.UserAgents.All);
+        rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco");
         
-
         if (configSection["CustomRobots"] != null && configSection["CustomRobots"] is { Length: > 0 })
         {
             var customRobotsValue = configSection["CustomRobots"];
@@ -82,7 +72,7 @@ public class RobotsController(
 
                     if (domainRootContent != null && domainRootContent.IsPublished(culture))
                     {
-                        bool isSitemapPublished = domainRootContent.Children().Any(x =>
+                        bool isSitemapPublished = domainRootContent.Children(culture).Any(x =>
                             x.ContentType.Alias.Equals("sitemap") &&
                             x.IsPublished(culture));
 
