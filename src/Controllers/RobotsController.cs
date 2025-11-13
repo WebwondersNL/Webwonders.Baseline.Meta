@@ -82,7 +82,7 @@ public class RobotsController(
                             var fullUrl = domainString.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                                 ? domainString
                                 : $"https://{domainString}";
-                            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap");
+                            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap.xml");
                         }
                     }
                 }
