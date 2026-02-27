@@ -20,6 +20,7 @@ public class SitemapController : Controller
     private readonly IVariationContextAccessor _variationContextAccessor;
     private readonly IUmbracoContextFactory _umbracoContextFactory;
     private readonly ILanguageService _languageService;
+    private readonly IPublicAccessService  _publicAccessService;
     
     public SitemapController(
         ILogger<SitemapController> logger,
@@ -27,7 +28,8 @@ public class SitemapController : Controller
         IConfiguration configuration,
         IVariationContextAccessor variationContextAccessor,
         IUmbracoContextFactory umbracoContextFactory,
-        ILanguageService languageService
+        ILanguageService languageService,
+        IPublicAccessService publicAccessService
     )
     {
         _logger = logger;
@@ -36,6 +38,7 @@ public class SitemapController : Controller
         _variationContextAccessor = variationContextAccessor;
         _umbracoContextFactory = umbracoContextFactory;
         _languageService = languageService;
+        _publicAccessService = publicAccessService;
     }
     
     
@@ -138,6 +141,12 @@ public class SitemapController : Controller
         var renderNode = true;
         var url = node.Url(mode: UrlMode.Absolute);
 
+        if (!node.IsVisible() || _publicAccessService.IsProtected(node.Path))
+        {
+            renderNode = false;
+        }
+        
+        
         if (node.ContentType.Alias == Constants.Sitemap.PageTypes.Redirect)
         {
             var redirectTo = node.Value<Link>(Constants.Sitemap.Properties.RedirectToProperty);
