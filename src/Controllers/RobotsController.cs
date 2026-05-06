@@ -2,18 +2,14 @@
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.Common.Controllers;
-using Umbraco.Extensions;
 
 namespace Webwonders.Baseline.Meta.Controllers;
 
 public class RobotsController(
     ILogger<RobotsController> logger,
     IDomainService domainService,
-    IUmbracoContextFactory umbracoContextFactory,
     IConfiguration configuration,
     ICompositeViewEngine compositeViewEngine
     ) : UmbracoPageController(logger, compositeViewEngine)
@@ -61,37 +57,30 @@ public class RobotsController(
             return Content(generatedRules, "text/plain");
         }
 
-        using (UmbracoContextReference umbracoContextReference = umbracoContextFactory.EnsureUmbracoContext())
+        var excludedDomains = configSection.GetSection("ExcludedDomains").Get<string[]>() ?? Array.Empty<string>();
+
+        foreach (var domain in domains)
         {
-            foreach (var domain in domains)
+            if (string.IsNullOrWhiteSpace(domain.DomainName))
             {
-                if (domain.RootContentId.HasValue && !string.IsNullOrWhiteSpace(domain.LanguageIsoCode))
-                {
-                    var domainRootContent = umbracoContextReference?.UmbracoContext?.Content?.GetById(domain.RootContentId.Value);
-                    var culture = domain.LanguageIsoCode;
+                continue;
+            }
+                
 
-                    if (domainRootContent != null && domainRootContent.IsPublished(culture))
-                    {
-                        bool isSitemapPublished = domainRootContent.Children(culture).Any(x =>
-                            x.ContentType.Alias.Equals("sitemap") &&
-                            x.IsPublished(culture));
-
-                        if (isSitemapPublished)
-                        {
-                            string domainString = domain.DomainName;
-                            var fullUrl = domainString.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                                ? domainString
-                                : $"https://{domainString}";
-                            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap.xml");
-                        }
-                    }
-                }
+            var domainHost = domain.DomainName.TrimEnd('/').ToLowerInvariant();
+            if (excludedDomains.Any(e => domainHost.Contains(e.ToLowerInvariant())))
+            {
+                continue;
             }
             
-            var generatedRobots = GenerateRobots(rules);
-            
-            return Content(generatedRobots, "text/plain");
+            var fullUrl = domainHost.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? domainHost
+                : $"https://{domainHost}";
+            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap.xml");
         }
+
+        var generatedRobots = GenerateRobots(rules);
+        return Content(generatedRobots, "text/plain");
 
     }
 

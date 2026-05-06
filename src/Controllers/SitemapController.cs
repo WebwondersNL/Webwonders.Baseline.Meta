@@ -104,6 +104,14 @@ public class SitemapController : Controller
             }
         }
         
+        var excludedDomains = configSection.GetSection("ExcludedDomains").Get<string[]>() ?? Array.Empty<string>();
+        var resolvedHost = domain.DomainName.TrimEnd('/').ToLowerInvariant();
+        if (excludedDomains.Any(e => resolvedHost.Contains(e.ToLowerInvariant())))
+        {
+            _logger.LogInformation("SitemapController: Domain {domain} is excluded from sitemap generation.", resolvedHost);
+            return NotFound();
+        }
+
         var excludedDoctypes = configSection.GetSection("ExcludedDoctypesFromSitemaps").Get<string[]>() ?? Array.Empty<string>();
         
         // Build the XML

@@ -5,4 +5,5 @@ public class WebwondersMetaSettings
     public const string ConfigurationName = "Webwonders:Meta";
     public string[] RedirectUrls { get; set; } = [];
     public string[] ExcludedDoctypesFromSitemaps { get; set; } = [];
+    public string[] ExcludedDomainsFromSitemaps { get; set; } = [];
 }
