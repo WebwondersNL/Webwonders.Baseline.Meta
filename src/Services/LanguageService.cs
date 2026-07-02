@@ -1,7 +1,9 @@
 ﻿using System.Globalization;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Extensions;
 using Webwonders.Baseline.Meta.Models;
+using Webwonders.Baseline.Meta.Options;
 
 namespace Webwonders.Baseline.Meta.Services;
 
@@ -10,7 +12,7 @@ public interface ILanguageService
     LanguagesModel? GetLanguages(IPublishedContent currentPage, string? culture, bool fallbackToAncestors = true);
 }
 
-public class LanguageService() : ILanguageService
+public class LanguageService(IOptions<WebwondersMetaSettings> settings) : ILanguageService
 {
 
     public LanguagesModel? GetLanguages(IPublishedContent currentPage, string? culture, bool fallbackToAncestors = true)
@@ -20,12 +22,12 @@ public class LanguageService() : ILanguageService
             return null;
         }
 
+        var useRegionInName = settings.Value.UseRegionInLanguageName;
+
         var currentCulture = new CultureInfo(culture);
         var result = new LanguagesModel
         {
-            CurrentName = currentCulture.IsNeutralCulture
-                ? currentCulture.NativeName
-                : currentCulture.Parent.NativeName,
+            CurrentName = GetDisplayName(currentCulture, useRegionInName),
             CurrentFlagClass = new RegionInfo(currentCulture.LCID).TwoLetterISORegionName.ToLower()
         };
 
@@ -55,9 +57,7 @@ public class LanguageService() : ILanguageService
 
                 var languageModel = new LanguageModel
                 {
-                    Name = currentCultureInfo.IsNeutralCulture
-                        ? currentCultureInfo.NativeName
-                        : currentCultureInfo.Parent.NativeName,
+                    Name = GetDisplayName(currentCultureInfo, useRegionInName),
                     FlagClass = currentLanguageInfo.TwoLetterISORegionName.ToLower(),
                     Url = url,
                     Culture = currentCultureInfo.Name
@@ -69,4 +69,9 @@ public class LanguageService() : ILanguageService
 
         return result;
     }
+
+    private static string GetDisplayName(CultureInfo cultureInfo, bool useRegionInName) =>
+        useRegionInName || cultureInfo.IsNeutralCulture
+            ? cultureInfo.NativeName
+            : cultureInfo.Parent.NativeName;
 }
