@@ -24,7 +24,7 @@ public class RobotsController(
         List<string> rules = new List<string>();
         
         rules.Add(Constants.RobotsTxt.UserAgents.All);
-        rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco");
+        rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco/");
         
         if (configSection["CustomRobots"] != null && configSection["CustomRobots"] is { Length: > 0 })
         {
