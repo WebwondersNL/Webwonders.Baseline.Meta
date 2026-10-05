@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
@@ -32,6 +33,28 @@ namespace Webwonders.Baseline.Meta.Composers
                 };
             });
             
+            builder.Services.Configure<UmbracoPipelineOptions>(options =>
+            {
+                options.AddFilter(new UmbracoPipelineFilter("WebwondersContentSignal")
+                {
+                    PrePipeline = app => app.Use(async (context, next) =>
+                    {
+                        var signal = context.RequestServices
+                            .GetRequiredService<IOptions<WebwondersMetaSettings>>().Value.ContentSignal;
+                        if (signal is { Enabled: true, SendHeaders: true })
+                        {
+                            context.Response.OnStarting(() =>
+                            {
+                                context.Response.Headers[Constants.Headers.ContentSignal] = signal.ToSignalValue();
+                                context.Response.Headers[Constants.Headers.ContentUsage] = signal.ToUsageValue();
+                                return Task.CompletedTask;
+                            });
+                        }
+                        await next();
+                    })
+                });
+            });
+
             builder.Services.Configure<UmbracoPipelineOptions>(options =>
             {
                 options.AddFilter(new UmbracoPipelineFilter(nameof(RobotsController))

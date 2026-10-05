@@ -12,4 +12,36 @@ public class WebwondersMetaSettings
     /// multiple regions per language stay distinguishable. Defaults to false (parent language name only).
     /// </summary>
     public bool UseRegionInLanguageName { get; set; }
+
+    public ContentSignalSettings ContentSignal { get; set; } = new();
+}
+
+/// <summary>
+/// Advisory AI-use preferences (Content-Signal). Opt-in via <c>Webwonders:Meta:ContentSignal:Enabled</c>.
+/// </summary>
+public class ContentSignalSettings
+{
+    public bool Enabled { get; set; }
+
+    /// <summary>AI model training, fine-tuning and dataset creation.</summary>
+    public bool AiTrain { get; set; }
+
+    /// <summary>AI search indexing, snippets and discovery.</summary>
+    public bool Search { get; set; } = true;
+
+    /// <summary>AI answer grounding, retrieval and generated-response context.</summary>
+    public bool AiInput { get; set; } = true;
+
+    /// <summary>Send Content-Signal and Content-Usage HTTP response headers on every response.</summary>
+    public bool SendHeaders { get; set; } = true;
+
+    /// <summary>Add the (experimental) Content-Signal directive to the generated robots.txt.</summary>
+    public bool AddToRobotsTxt { get; set; } = true;
+
+    public string ToSignalValue() =>
+        $"ai-train={YesNo(AiTrain)}, search={YesNo(Search)}, ai-input={YesNo(AiInput)}";
+
+    public string ToUsageValue() => $"train-ai={(AiTrain ? "y" : "n")}";
+
+    private static string YesNo(bool value) => value ? "yes" : "no";
 }

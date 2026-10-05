@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Web.Common.Controllers;
+using Webwonders.Baseline.Meta.Options;
 
 namespace Webwonders.Baseline.Meta.Controllers;
 
@@ -11,8 +13,9 @@ public class RobotsController(
     ILogger<RobotsController> logger,
     IDomainService domainService,
     IConfiguration configuration,
-    ICompositeViewEngine compositeViewEngine
-    ) : UmbracoPageController(logger, compositeViewEngine)
+    ICompositeViewEngine compositeViewEngine,
+    IOptions<WebwondersMetaSettings> settings
+    ): UmbracoPageController(logger, compositeViewEngine)
 {
     public async Task<IActionResult> Robots()
     {
@@ -25,6 +28,12 @@ public class RobotsController(
         
         rules.Add(Constants.RobotsTxt.UserAgents.All);
         rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco/");
+
+        var contentSignal = settings.Value.ContentSignal;
+        if (contentSignal is { Enabled: true, AddToRobotsTxt: true })
+        {
+            rules.Add($"{Constants.RobotsTxt.Content.ContentSignal}{contentSignal.ToSignalValue()}");
+        }
         
         if (configSection["CustomRobots"] != null && configSection["CustomRobots"] is { Length: > 0 })
         {

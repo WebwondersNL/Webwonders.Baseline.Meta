@@ -19,7 +19,14 @@ public static partial class Constants
             public const string Disallow = "Disallow: ";
             public const string Allow = "Allow: ";
             public const string Sitemap = "Sitemap: ";
+            public const string ContentSignal = "Content-Signal: ";
         }
+    }
+
+    public static class Headers
+    {
+        public const string ContentSignal = "Content-Signal";
+        public const string ContentUsage = "Content-Usage";
     }
 
     public static class Sitemap

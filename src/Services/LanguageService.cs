@@ -28,7 +28,7 @@ public class LanguageService(IOptions<WebwondersMetaSettings> settings) : ILangu
         var result = new LanguagesModel
         {
             CurrentName = GetDisplayName(currentCulture, useRegionInName),
-            CurrentFlagClass = new RegionInfo(currentCulture.LCID).TwoLetterISORegionName.ToLower()
+            CurrentFlagClass = GetRegionInfo(currentCulture).TwoLetterISORegionName.ToLower()
         };
 
         var home = currentPage.Root();
@@ -44,7 +44,7 @@ public class LanguageService(IOptions<WebwondersMetaSettings> settings) : ILangu
                     continue;
 
                 var currentCultureInfo = new CultureInfo(rootCulture.Culture);
-                var currentLanguageInfo = new RegionInfo(currentCultureInfo.LCID);
+                var currentLanguageInfo = GetRegionInfo(currentCultureInfo);
                 
                 var pageHasCulture = pageCultures.Any(x => x.Culture == rootCulture.Culture);
                 
@@ -74,4 +74,13 @@ public class LanguageService(IOptions<WebwondersMetaSettings> settings) : ILangu
         useRegionInName || cultureInfo.IsNeutralCulture
             ? cultureInfo.NativeName
             : cultureInfo.Parent.NativeName;
+
+    private static RegionInfo GetRegionInfo(CultureInfo cultureInfo)
+    {
+        var specificCulture = cultureInfo.IsNeutralCulture
+            ? CultureInfo.CreateSpecificCulture(cultureInfo.Name)
+            : cultureInfo;
+
+        return new RegionInfo(specificCulture.LCID);
+    }
 }
