@@ -44,7 +44,13 @@ public class RobotsController(
         if (robotsSettings.AllowAiCrawlers)
         {
             // A crawler with its own group ignores the "*" group, so the /umbraco/ block is repeated here.
-            foreach (var crawler in robotsSettings.AiCrawlers.Where(c => !string.IsNullOrWhiteSpace(c)))
+            // Array settings bound from configuration are merged with the defaults, so duplicates must be removed.
+            var crawlers = robotsSettings.AiCrawlers
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Select(c => c.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var crawler in crawlers)
             {
                 rules.Add(string.Empty);
                 rules.Add($"User-agent: {crawler.Trim()}");
@@ -66,7 +72,7 @@ public class RobotsController(
             logger.LogInformation("RobotsController: Custom robots.txt found in configuration");
             if (customRobotsValue != null)
             {
-                return Content(customRobotsValue);
+                return Content(customRobotsValue, "text/plain");
             }
         }
 
@@ -109,7 +115,11 @@ public class RobotsController(
             var fullUrl = domainHost.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                 ? domainHost
                 : $"https://{domainHost}";
-            rules.Add($"Sitemap: {fullUrl.TrimEnd('/')}/sitemap.xml");
+            var sitemapRule = $"{Constants.RobotsTxt.Content.Sitemap}{fullUrl.TrimEnd('/')}/sitemap.xml";
+            if (!rules.Contains(sitemapRule))
+            {
+                rules.Add(sitemapRule);
+            }
         }
 
         var generatedRobots = GenerateRobots(rules);
