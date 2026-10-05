@@ -20,6 +20,7 @@ public static partial class Constants
             public const string Allow = "Allow: ";
             public const string Sitemap = "Sitemap: ";
             public const string ContentSignal = "Content-Signal: ";
+            public const string CrawlDelay = "Crawl-delay: ";
         }
     }
 

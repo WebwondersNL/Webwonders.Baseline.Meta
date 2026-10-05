@@ -34,6 +34,30 @@ public class RobotsController(
         {
             rules.Add($"{Constants.RobotsTxt.Content.ContentSignal}{contentSignal.ToSignalValue()}");
         }
+
+        var robotsSettings = settings.Value.Robots;
+        if (robotsSettings.CrawlDelay > 0)
+        {
+            rules.Add($"{Constants.RobotsTxt.Content.CrawlDelay}{robotsSettings.CrawlDelay}");
+        }
+
+        if (robotsSettings.AllowAiCrawlers)
+        {
+            // A crawler with its own group ignores the "*" group, so the /umbraco/ block is repeated here.
+            foreach (var crawler in robotsSettings.AiCrawlers.Where(c => !string.IsNullOrWhiteSpace(c)))
+            {
+                rules.Add(string.Empty);
+                rules.Add($"User-agent: {crawler.Trim()}");
+                rules.Add($"{Constants.RobotsTxt.Content.Allow}/");
+                rules.Add($"{Constants.RobotsTxt.Content.Disallow}/umbraco/");
+                if (robotsSettings.CrawlDelay > 0)
+                {
+                    rules.Add($"{Constants.RobotsTxt.Content.CrawlDelay}{robotsSettings.CrawlDelay}");
+                }
+            }
+        }
+
+        rules.Add(string.Empty);
         
         if (configSection["CustomRobots"] != null && configSection["CustomRobots"] is { Length: > 0 })
         {

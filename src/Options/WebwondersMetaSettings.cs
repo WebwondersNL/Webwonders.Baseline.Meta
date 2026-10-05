@@ -14,6 +14,20 @@ public class WebwondersMetaSettings
     public bool UseRegionInLanguageName { get; set; }
 
     public ContentSignalSettings ContentSignal { get; set; } = new();
+
+    public RobotsSettings Robots { get; set; } = new();
+}
+
+public class RobotsSettings
+{
+    /// <summary>When true, adds an explicit "Allow: /" group for each crawler in <see cref="AiCrawlers"/>.</summary>
+    public bool AllowAiCrawlers { get; set; }
+
+    public string[] AiCrawlers { get; set; } =
+        ["GPTBot", "ChatGPT-User", "ClaudeBot", "Claude-Web", "PerplexityBot", "Google-Extended"];
+
+    /// <summary>Crawl-delay in seconds, applied to "*" and the AI crawler groups. 0 disables it.</summary>
+    public int CrawlDelay { get; set; }
 }
 
 /// <summary>
