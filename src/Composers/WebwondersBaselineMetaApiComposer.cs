@@ -19,7 +19,7 @@ namespace Webwonders.Baseline.Meta.Composers
             
             builder.Services.Configure<UmbracoRequestOptions>(options =>
             {
-                string[] allowList = new[] {"/sitemap.xml", "/robots.txt"};
+                string[] allowList = new[] {"/sitemap.xml", "/robots.txt", "/llms.txt"};
                 options.HandleAsServerSideRequest = httpRequest =>
                 {
                     foreach (string route in allowList)
@@ -89,6 +89,25 @@ namespace Webwonders.Baseline.Meta.Composers
                 });
             });
             
+            builder.Services.Configure<UmbracoPipelineOptions>(options =>
+            {
+                options.AddFilter(new UmbracoPipelineFilter(nameof(LlmsTxtController))
+                {
+                    Endpoints = app => app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllerRoute(
+                            "LlmsTxt Controller",
+                            "/llms.txt",
+                            new { Controller = "LlmsTxt", Action = "LlmsTxt" });
+
+                        endpoints.MapControllerRoute(
+                            "LlmsTxt Controller with culture",
+                            "/{culture}/llms.txt",
+                            new { Controller = "LlmsTxt", Action = "LlmsTxt" });
+                    })
+                });
+            });
+
             builder.Services.AddScoped<ILanguageService, LanguageService>();
         }
     }

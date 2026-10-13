@@ -16,6 +16,49 @@ public class WebwondersMetaSettings
     public ContentSignalSettings ContentSignal { get; set; } = new();
 
     public RobotsSettings Robots { get; set; } = new();
+
+    public LlmsTxtSettings LlmsTxt { get; set; } = new();
+
+    public SitemapSettings Sitemap { get; set; } = new();
+}
+
+public class SitemapSettings
+{
+    /// <summary>Optional overrides for the property aliases the sitemap reads. Empty means the default alias is used.</summary>
+    public SitemapPropertyAliases Properties { get; set; } = new();
+}
+
+public class SitemapPropertyAliases
+{
+    /// <summary>Default "searchEngineChangeFrequency".</summary>
+    public string? ChangeFrequency { get; set; }
+
+    /// <summary>Default "searchEngineRelativePriority".</summary>
+    public string? Priority { get; set; }
+
+    /// <summary>Default "hideFromSearchEngines". When true the page and its subtree are left out.</summary>
+    public string? HideFromSearchEngines { get; set; }
+
+    /// <summary>Default "hideFromSiteSearch". When true the page itself is left out.</summary>
+    public string? HideFromSiteSearch { get; set; }
+
+    /// <summary>Default "redirectTo". Link property on the redirect page type.</summary>
+    public string? RedirectTo { get; set; }
+}
+
+public class LlmsTxtSettings
+{
+    /// <summary>
+    /// Alias of the composition that marks the node holding the llms.txt property. The root node is checked first,
+    /// then its immediate children. Defaults to "llmSettings".
+    /// </summary>
+    public string CompositionAlias { get; set; } = "llmSettings";
+
+    /// <summary>
+    /// Optional. Alias of the property holding the llms.txt content. When empty (default) the property is found
+    /// on the root node by its editor (LLMs.txt), whatever its alias.
+    /// </summary>
+    public string? PropertyAlias { get; set; }
 }
 
 public class RobotsSettings

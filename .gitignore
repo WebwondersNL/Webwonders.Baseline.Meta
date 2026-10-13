@@ -68,3 +68,10 @@ _ReSharper*/
 # Rider logs
 .idea_modules/
 .DS_Store
+## Sandbox site (local data, build output)
+sandbox/**/umbraco/Data/
+sandbox/**/umbraco/Logs/
+sandbox/**/wwwroot/media/
+sandbox/**/appsettings-schema*.json
+sandbox/**/bin/
+sandbox/**/obj/

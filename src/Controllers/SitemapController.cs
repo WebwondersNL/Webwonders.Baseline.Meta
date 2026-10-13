@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
+using Webwonders.Baseline.Meta.Options;
 
 namespace Webwonders.Baseline.Meta.Controllers;
 
@@ -21,6 +23,11 @@ public class SitemapController : Controller
     private readonly IUmbracoContextFactory _umbracoContextFactory;
     private readonly ILanguageService _languageService;
     private readonly IPublicAccessService  _publicAccessService;
+    private readonly string _changeFrequencyAlias;
+    private readonly string _priorityAlias;
+    private readonly string _hideFromSearchEnginesAlias;
+    private readonly string _hideFromSiteSearchAlias;
+    private readonly string _redirectToAlias;
     
     public SitemapController(
         ILogger<SitemapController> logger,
@@ -29,7 +36,8 @@ public class SitemapController : Controller
         IVariationContextAccessor variationContextAccessor,
         IUmbracoContextFactory umbracoContextFactory,
         ILanguageService languageService,
-        IPublicAccessService publicAccessService
+        IPublicAccessService publicAccessService,
+        IOptions<WebwondersMetaSettings> settings
     )
     {
         _logger = logger;
@@ -39,8 +47,19 @@ public class SitemapController : Controller
         _umbracoContextFactory = umbracoContextFactory;
         _languageService = languageService;
         _publicAccessService = publicAccessService;
+
+        // Appsettings (Webwonders:Meta:Sitemap:Properties) override the default aliases when set.
+        var aliases = settings.Value.Sitemap.Properties;
+        _changeFrequencyAlias = AliasOrDefault(aliases.ChangeFrequency, Constants.Sitemap.Properties.SearchEngineFrequency);
+        _priorityAlias = AliasOrDefault(aliases.Priority, Constants.Sitemap.Properties.SearchEnginePriority);
+        _hideFromSearchEnginesAlias = AliasOrDefault(aliases.HideFromSearchEngines, Constants.Sitemap.Properties.HideFromSearchEngines);
+        _hideFromSiteSearchAlias = AliasOrDefault(aliases.HideFromSiteSearch, Constants.Sitemap.Properties.HideFromSiteSearch);
+        _redirectToAlias = AliasOrDefault(aliases.RedirectTo, Constants.Sitemap.Properties.RedirectToProperty);
     }
-    
+
+    private static string AliasOrDefault(string? configured, string fallback) =>
+        string.IsNullOrWhiteSpace(configured) ? fallback : configured.Trim();
+
     
     [HttpGet]
     public async Task<IActionResult> Sitemap(string? culture)
@@ -138,18 +157,20 @@ public class SitemapController : Controller
     {
         _variationContextAccessor.VariationContext = new VariationContext(languageIsoCode);
         
-        var changeFrequency = node.HasValue(Constants.Sitemap.Properties.SearchEngineFrequency, fallback: Fallback.ToAncestors)
-            ? node.Value(Constants.Sitemap.Properties.SearchEngineFrequency, fallback: Fallback.ToAncestors)
+        var changeFrequency = node.HasValue(_changeFrequencyAlias, fallback: Fallback.ToAncestors)
+            ? node.Value(_changeFrequencyAlias, fallback: Fallback.ToAncestors)
             : Constants.Sitemap.Default.ChangeFrequency;
-        
-        var priority = node.HasValue(Constants.Sitemap.Properties.SearchEnginePriority, fallback: Fallback.ToAncestors)
-            ? node.Value(Constants.Sitemap.Properties.SearchEnginePriority)
+
+        var priority = node.HasValue(_priorityAlias, fallback: Fallback.ToAncestors)
+            ? node.Value(_priorityAlias)
             : Constants.Sitemap.Default.Priority;
 
         var renderNode = true;
         var url = node.Url(mode: UrlMode.Absolute);
 
-        if (!node.IsVisible() || _publicAccessService.IsProtected(node.Path))
+        if (!node.IsVisible()
+            || node.Value<bool>(_hideFromSiteSearchAlias)
+            || _publicAccessService.IsProtected(node.Path))
         {
             renderNode = false;
         }
@@ -157,7 +178,7 @@ public class SitemapController : Controller
         
         if (node.ContentType.Alias == Constants.Sitemap.PageTypes.Redirect)
         {
-            var redirectTo = node.Value<Link>(Constants.Sitemap.Properties.RedirectToProperty);
+            var redirectTo = node.Value<Link>(_redirectToAlias);
 
             if (redirectTo != null && (redirectTo.Url == null || 
                                        (redirectTo.Type == LinkType.External && !redirectTo.Url.Contains(Request.Host.Host))))
@@ -193,11 +214,11 @@ public class SitemapController : Controller
         
         var stringBuilder = new StringBuilder();
         
-        foreach(var page in parentPage?.Children()?.Where(f => !excludedDocumentTypes.Contains(f.ContentType.Alias) && !f.Value<bool>(Constants.Sitemap.Properties.HideFromSearchEngines))!)
+        foreach(var page in parentPage?.Children()?.Where(f => !excludedDocumentTypes.Contains(f.ContentType.Alias) && !f.Value<bool>(_hideFromSearchEnginesAlias))!)
         {
             stringBuilder.Append(RenderSiteMapUrlEntry(page, languageIsoCode));
-            
-            if((bool)page?.Children()?.Any(f => !excludedDocumentTypes.Contains(f.ContentType.Alias) && !f.Value<bool>(Constants.Sitemap.Properties.HideFromSearchEngines))!)
+
+            if((bool)page?.Children()?.Any(f => !excludedDocumentTypes.Contains(f.ContentType.Alias) && !f.Value<bool>(_hideFromSearchEnginesAlias))!)
             {
                 stringBuilder.Append(RenderSiteMapUrlEntriesForChildren(page, excludedDocumentTypes, languageIsoCode));
             }

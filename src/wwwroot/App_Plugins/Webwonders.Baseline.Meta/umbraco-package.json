@@ -1,0 +1,20 @@
+{
+  "name": "Webwonders Baseline Meta",
+  "version": "1.0.0",
+  "allowTelemetry": false,
+  "extensions": [
+    {
+      "type": "propertyEditorUi",
+      "alias": "Webwonders.PropertyEditorUi.LlmsTxt",
+      "name": "Webwonders LLMs.txt Property Editor UI",
+      "element": "/App_Plugins/Webwonders.Baseline.Meta/llms-txt-editor.js",
+      "elementName": "webwonders-llms-txt-editor",
+      "meta": {
+        "label": "LLMs.txt",
+        "icon": "icon-document",
+        "group": "common",
+        "propertyEditorSchemaAlias": "Webwonders.LlmsTxt"
+      }
+    }
+  ]
+}
