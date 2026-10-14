@@ -168,8 +168,7 @@ public class SitemapController : Controller
         var renderNode = true;
         var url = node.Url(mode: UrlMode.Absolute);
 
-        if (!node.IsVisible()
-            || node.Value<bool>(_hideFromSiteSearchAlias)
+        if (node.Value<bool>(_hideFromSiteSearchAlias)
             || _publicAccessService.IsProtected(node.Path))
         {
             renderNode = false;
